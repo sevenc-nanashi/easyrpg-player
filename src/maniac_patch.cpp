@@ -30,6 +30,7 @@
 #include "output.h"
 #include "player.h"
 
+#include <cstdlib>
 #include <lcf/reader_lcf.h>
 #include <lcf/reader_util.h>
 #include <lcf/writer_lcf.h>
@@ -178,6 +179,7 @@ struct ProcessAssignmentRet {
 };
 
 ProcessAssignmentRet ProcessAssignment(std::vector<int32_t>::iterator& it, std::vector<int32_t>::iterator end, const Game_BaseInterpreterContext& ip);
+std::vector<int> ProcessArray(std::vector<int32_t>::iterator& it, std::vector<int32_t>::iterator end, const Game_BaseInterpreterContext& ip);
 
 int Process(std::vector<int32_t>::iterator& it, std::vector<int32_t>::iterator end, const Game_BaseInterpreterContext& ip) {
 	int value = 0;
@@ -239,6 +241,11 @@ int Process(std::vector<int32_t>::iterator& it, std::vector<int32_t>::iterator e
 		case Op::SwitchIndirect:
 			imm = Process(it, end, ip);
 			return Main_Data::game_switches->GetInt(Main_Data::game_variables->Get(imm));
+		case Op::Array: {
+			--it;
+			auto values = ProcessArray(it, end, ip);
+			return values.empty() ? 0 : values.front();
+		}
 		case Op::Negate:
 			imm = Process(it, end, ip);
 			return -imm;
@@ -387,6 +394,20 @@ int Process(std::vector<int32_t>::iterator& it, std::vector<int32_t>::iterator e
 			imm = Process(it, end, ip);
 			imm2 = Process(it, end, ip);
 			return !!imm && !!imm2 ? 1 : 0;
+		case Op::Range: {
+			--it;
+			auto values = ProcessArray(it, end, ip);
+			return values.empty() ? 0 : values.front();
+		}
+		case Op::Subscript: {
+			auto values = ProcessArray(it, end, ip);
+			imm = Process(it, end, ip);
+			if (imm < 0 || imm >= static_cast<int>(values.size())) {
+				Output::Warning("Maniac: Expression subscript {} out of range {}", imm, values.size());
+				return 0;
+			}
+			return values[imm];
+		}
 		case Op::Ternary:
 			imm = Process(it, end, ip);
 			imm2 = Process(it, end, ip);
@@ -534,6 +555,54 @@ int Process(std::vector<int32_t>::iterator& it, std::vector<int32_t>::iterator e
 		default:
 			Output::Warning("Maniac: Expression contains unsupported operation {}", static_cast<int>(op));
 			return 0;
+	}
+}
+
+std::vector<int> ProcessArray(std::vector<int32_t>::iterator& it, std::vector<int32_t>::iterator end, const Game_BaseInterpreterContext& ip) {
+	if (it == end) {
+		return {};
+	}
+
+	auto op = static_cast<Op>(*it);
+	++it;
+
+	switch (op) {
+		case Op::Array: {
+			if (it == end) {
+				return {};
+			}
+
+			auto size = *it++;
+			std::vector<int> values;
+			values.reserve(size);
+
+			for (int i = 0; i < size; ++i) {
+				values.push_back(Process(it, end, ip));
+			}
+
+			return values;
+		}
+		case Op::Range: {
+			auto first = Process(it, end, ip);
+			auto last = Process(it, end, ip);
+			std::vector<int> values;
+			values.reserve(std::abs(last - first) + 1);
+
+			if (first <= last) {
+				for (int value = first; value <= last; ++value) {
+					values.push_back(value);
+				}
+			} else {
+				for (int value = first; value >= last; --value) {
+					values.push_back(value);
+				}
+			}
+
+			return values;
+		}
+		default:
+			--it;
+			return {Process(it, end, ip)};
 	}
 }
 
