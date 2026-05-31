@@ -2,102 +2,44 @@
 	"version": 4,
 	"configurePresets": [
 		{
-			"name": "gengaku-win64-debug",
-			"displayName": "Gengaku Windows x64 Debug (SDL3)",
-			"description": "Local Windows x64 Debug build for target-game Maniacs validation using vcpkg x64-windows and the dynamic MSVC CRT.",
-			"inherits": [
-				"build-sdl3",
-				"win-user",
-				"type-debug"
-			],
-			"generator": "Visual Studio 18 2026",
-			"architecture": "x64",
-			"binaryDir": "${sourceDir}/build/gengaku-win64-debug-md",
-			"toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+			"name": "gengaku-sdl3-wav-debug",
+			"displayName": "Gengaku SDL3 WAV Debug",
+			"description": "Local SDL3 debug build with audio dependencies kept to SDL3 output and built-in WAV decoding.",
+			"inherits": "sdl3-debug",
+			"binaryDir": "${sourceDir}/build/gengaku-sdl3-wav-debug",
 			"cacheVariables": {
-				"CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL",
-				"CMAKE_PREFIX_PATH": "C:/easyrpg-deps",
-				"VCPKG_TARGET_TRIPLET": "x64-windows",
-				"VCPKG_CRT_LINKAGE": "dynamic",
-				"PLAYER_TARGET_PLATFORM": "SDL3",
+				"CMAKE_PREFIX_PATH": "${sourceDir}/__gi_deps",
 				"PLAYER_BUILD_LIBLCF": "OFF",
-				"liblcf_DIR": "C:/easyrpg-deps/lib/cmake/liblcf",
+				"liblcf_DIR": "${sourceDir}/__gi_deps/lib/cmake/liblcf",
+				"INIH_INCLUDE_DIR": "${sourceDir}/liblcf/__gi_inih",
+				"INIH_LIBRARY": "${sourceDir}/liblcf/__gi_inih/build-static/libinih.a",
 				"PLAYER_ENABLE_TESTS": "OFF",
 				"PLAYER_ENABLE_BENCHMARKS": "OFF",
-				"PLAYER_WITH_LHASA": "OFF",
-				"PLAYER_WITH_NLOHMANN_JSON": "OFF",
-				"PLAYER_WITH_FREETYPE": "ON",
-				"PLAYER_WITH_HARFBUZZ": "ON",
-				"PLAYER_WITH_BAEKMUK": "OFF",
-				"PLAYER_WITH_WQY": "OFF",
+				"PLAYER_TARGET_PLATFORM": "SDL3",
 				"PLAYER_AUDIO_BACKEND": "SDL3",
-				"PLAYER_WITH_MPG123": "OFF",
+				"PLAYER_ENABLE_DRWAV": "ON",
 				"PLAYER_WITH_LIBSNDFILE": "OFF",
+				"PLAYER_WITH_MPG123": "OFF",
 				"PLAYER_WITH_OGGVORBIS": "OFF",
 				"PLAYER_WITH_OPUS": "OFF",
 				"PLAYER_WITH_WILDMIDI": "OFF",
 				"PLAYER_WITH_FLUIDSYNTH": "OFF",
 				"PLAYER_WITH_FLUIDLITE": "OFF",
 				"PLAYER_WITH_XMP": "OFF",
-				"PLAYER_AUDIO_RESAMPLER": "OFF"
-			}
-		},
-		{
-			"name": "gengaku-win64-release",
-			"displayName": "Gengaku Windows x64 Release (SDL3)",
-			"description": "Local Windows x64 Release build using vcpkg x64-windows and the dynamic MSVC CRT.",
-			"inherits": [
-				"build-sdl3",
-				"win-user",
-				"type-release"
-			],
-			"generator": "Visual Studio 18 2026",
-			"architecture": "x64",
-			"binaryDir": "${sourceDir}/build/gengaku-win64-release-md",
-			"toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-			"cacheVariables": {
-				"CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreadedDLL",
-				"CMAKE_PREFIX_PATH": "C:/easyrpg-deps",
-				"VCPKG_TARGET_TRIPLET": "x64-windows",
-				"VCPKG_CRT_LINKAGE": "dynamic",
-				"PLAYER_TARGET_PLATFORM": "SDL3",
-				"PLAYER_BUILD_LIBLCF": "OFF",
-				"liblcf_DIR": "C:/easyrpg-deps/lib/cmake/liblcf",
-				"INIH_INCLUDE_DIR": "C:/vcpkg/installed/x64-windows/include",
-				"INIH_LIBRARY": "C:/vcpkg/installed/x64-windows/lib/inih.lib",
-				"PLAYER_ENABLE_TESTS": "OFF",
-				"PLAYER_ENABLE_BENCHMARKS": "OFF",
+				"PLAYER_AUDIO_RESAMPLER": "OFF",
 				"PLAYER_WITH_LHASA": "OFF",
 				"PLAYER_WITH_NLOHMANN_JSON": "OFF",
-				"PLAYER_WITH_FREETYPE": "ON",
-				"PLAYER_WITH_HARFBUZZ": "ON",
+				"PLAYER_WITH_HARFBUZZ": "OFF",
 				"PLAYER_WITH_BAEKMUK": "OFF",
-				"PLAYER_WITH_WQY": "OFF",
-				"PLAYER_AUDIO_BACKEND": "SDL3",
-				"PLAYER_WITH_MPG123": "OFF",
-				"PLAYER_WITH_LIBSNDFILE": "OFF",
-				"PLAYER_WITH_OGGVORBIS": "OFF",
-				"PLAYER_WITH_OPUS": "OFF",
-				"PLAYER_WITH_WILDMIDI": "OFF",
-				"PLAYER_WITH_FLUIDSYNTH": "OFF",
-				"PLAYER_WITH_FLUIDLITE": "OFF",
-				"PLAYER_WITH_XMP": "OFF",
-				"PLAYER_AUDIO_RESAMPLER": "OFF"
+				"PLAYER_WITH_WQY": "OFF"
 			}
 		}
 	],
 	"buildPresets": [
 		{
-			"name": "gengaku-win64-debug",
-			"displayName": "Build Gengaku Windows x64 Debug",
-			"configurePreset": "gengaku-win64-debug",
-			"configuration": "Debug"
-		},
-		{
-			"name": "gengaku-win64-release",
-			"displayName": "Build Gengaku Windows x64 Release",
-			"configurePreset": "gengaku-win64-release",
-			"configuration": "Release"
+			"name": "gengaku-sdl3-wav-debug",
+			"displayName": "Build Gengaku SDL3 WAV Debug",
+			"configurePreset": "gengaku-sdl3-wav-debug"
 		}
 	]
 }
