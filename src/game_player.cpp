@@ -903,8 +903,10 @@ void Game_Player::UpdatePan() {
 		return;
 
 	const int step = data()->pan_speed;
-	const int pan_remain_x = data()->pan_current_x - data()->pan_finish_x;
-	const int pan_remain_y = data()->pan_current_y - data()->pan_finish_y;
+	const int target_screen_x = GetSpriteX() - data()->pan_finish_x;
+	const int target_screen_y = GetSpriteY() - data()->pan_finish_y;
+	const int screen_remain_x = target_screen_x - Game_Map::GetPositionX();
+	const int screen_remain_y = target_screen_y - Game_Map::GetPositionY();
 
 	int dx;
 	int dy;
@@ -914,11 +916,11 @@ void Game_Player::UpdatePan() {
 		const double step_y = data()->maniac_vertical_pan_speed;
 
 		// Maniac uses doubles for smoother screen scrolling
-		double dx2 = std::min(step_x, PS4_WORKAROUND std::abs(static_cast<double>(pan_remain_x)));
-		double dy2 = std::min(step_y, PS4_WORKAROUND std::abs(static_cast<double>(pan_remain_y)));
+		double dx2 = std::min(step_x, PS4_WORKAROUND std::abs(static_cast<double>(screen_remain_x)));
+		double dy2 = std::min(step_y, PS4_WORKAROUND std::abs(static_cast<double>(screen_remain_y)));
 
-		dx2 = pan_remain_x >= 0 ? dx2 : -dx2;
-		dy2 = pan_remain_y >= 0 ? dy2 : -dy2;
+		dx2 = screen_remain_x >= 0 ? dx2 : -dx2;
+		dy2 = screen_remain_y >= 0 ? dy2 : -dy2;
 
 		maniac_pan_current_x -= dx2;
 		maniac_pan_current_y -= dy2;
@@ -927,11 +929,11 @@ void Game_Player::UpdatePan() {
 		dx = Utils::RoundTo<double>(std::abs(maniac_pan_current_x)) == std::ceil(std::abs(maniac_pan_current_x)) ? static_cast<int>(std::floor(dx2)) : static_cast<int>(std::ceil(dx2));
 		dy = Utils::RoundTo<double>(std::abs(maniac_pan_current_y)) == std::ceil(std::abs(maniac_pan_current_y)) ? static_cast<int>(std::floor(dy2)) : static_cast<int>(std::ceil(dy2));
 	} else {
-		dx = std::min(step, std::abs(pan_remain_x));
-		dy = std::min(step, std::abs(pan_remain_y));
+		dx = std::min(step, std::abs(screen_remain_x));
+		dy = std::min(step, std::abs(screen_remain_y));
 
-		dx = pan_remain_x >= 0 ? dx : -dx;
-		dy = pan_remain_y >= 0 ? dy : -dy;
+		dx = screen_remain_x >= 0 ? dx : -dx;
+		dy = screen_remain_y >= 0 ? dy : -dy;
 	}
 
 	int screen_x = Game_Map::GetPositionX();
@@ -947,8 +949,12 @@ void Game_Player::UpdatePan() {
 
 	Game_Map::Scroll(dx, dy);
 
-	data()->pan_current_x -= dx;
-	data()->pan_current_y -= dy;
+	data()->pan_current_x = GetSpriteX() - Game_Map::GetPositionX();
+	data()->pan_current_y = GetSpriteY() - Game_Map::GetPositionY();
+	if (Player::IsPatchManiac()) {
+		maniac_pan_current_x = static_cast<double>(data()->pan_current_x);
+		maniac_pan_current_y = static_cast<double>(data()->pan_current_y);
+	}
 }
 
 bool Game_Player::TriggerEventAt(int x, int y, bool triggered_by_decision_key, bool face_player) {
