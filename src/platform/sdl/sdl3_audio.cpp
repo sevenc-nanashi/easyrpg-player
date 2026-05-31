@@ -36,14 +36,16 @@ using namespace std::chrono_literals;
 
 namespace {
 	SDL_AudioStream* audio_stream = nullptr;
+	constexpr const char* default_audio_sample_frames = "4096";
 }
 
 void sdl_audio_callback(void* userdata, SDL_AudioStream* stream, int additional_amount, int total_amount) {
 	// no mutex locking required, SDL does this before calling
+	(void)total_amount;
 
 	if (additional_amount > 0) {
 		static std::vector<uint8_t> buffer;
-		buffer.resize(total_amount);
+		buffer.resize(additional_amount);
 
 		static_cast<GenericAudio*>(userdata)->Decode(buffer.data(), additional_amount);
 		SDL_PutAudioStreamData(stream, buffer.data(), additional_amount);
@@ -94,7 +96,11 @@ Sdl3Audio::Sdl3Audio(const Game_ConfigAudio& cfg) :
 #endif
 
 	const SDL_AudioSpec spec = { SDL_AUDIO_S16, 2, frequency };
-    audio_stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, sdl_audio_callback, this);
+	if (!SDL_GetHint(SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES)) {
+		SDL_SetHint(SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES, default_audio_sample_frames);
+	}
+
+	audio_stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, sdl_audio_callback, this);
 
 	if (!audio_stream) {
 		Output::Warning("Couldn't open audio: {}", SDL_GetError());
@@ -104,7 +110,7 @@ Sdl3Audio::Sdl3Audio(const Game_ConfigAudio& cfg) :
 	SetFormat(frequency, sdl_format_to_format(SDL_AUDIO_S16), 2);
 
 	// Start Audio
-    SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(audio_stream));
+	SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(audio_stream));
 }
 
 Sdl3Audio::~Sdl3Audio() {
