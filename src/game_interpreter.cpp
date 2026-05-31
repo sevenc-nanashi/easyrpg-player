@@ -5047,9 +5047,14 @@ bool Game_Interpreter::CommandManiacSetGameOption(lcf::rpg::EventCommand const& 
 	}
 
 	int operation = com.parameters[1];
-	//int value = ValueOrVariable(com.parameters[0], com.parameters[2]);
+	int value = ValueOrVariable(com.parameters[0], com.parameters[2]);
 
 	switch (operation) {
+		case 1: // Change FPS
+			if (value != DEFAULT_FPS) {
+				Output::Warning("Maniac SetGameOption: FPS {} not supported", value);
+			}
+			break;
 		case 2: // Change Picture Limit (noop, we support arbitrary amount of pictures)
 			break;
 		default:
